@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Leaflet Image Overlay</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    />
+  </head>
+  <body>
+    <div id="map" style="height: 500px"></div>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+      // Replace this with your actual GeoJSON data in the variable below
+      const geojsonFeature = {
+        type: "FeatureCollection",
+        features: [
+          {
+            type: "Feature",
+            properties: {},
+            geometry: {
+              coordinates: [
+                [
+                  [72.63020333828516, 23.11662907276437],
+                  [72.5931167611567, 23.128342697072057],
+                  [72.54329337976094, 23.135577071762256],
+                  [72.51032753342554, 23.12593115213248],
+                  [72.49122232702618, 23.07803578759571],
+                  [72.47661246330946, 23.038052490891857],
+                  [72.47511401574809, 22.999091832228032],
+                  [72.46425027093332, 22.96805317130962],
+                  [72.53542653006753, 22.93252240206772],
+                  [72.5777576736593, 22.92872730260939],
+                  [72.65155621602514, 22.947701736257514],
+                  [72.68227439101997, 23.04908355201833],
+                  [72.68489667425163, 23.103880731734804],
+                  [72.63020333828516, 23.11662907276437],
+                ],
+              ],
+              type: "Polygon",
+            },
+          },
+        ],
+      };
+
+      const imagejsonFeature = {
+        type: "FeatureCollection",
+        features: [
+          {
+            type: "Feature",
+            properties: {},
+            geometry: {
+              coordinates: [
+                [
+                  [23.11662907276437, 72.63020333828516],
+                  [23.128342697072057, 72.5931167611567],
+                  [23.135577071762256, 72.54329337976094],
+                  [23.12593115213248, 72.51032753342554],
+                  [23.07803578759571, 72.49122232702618],
+                  [23.038052490891857, 72.47661246330946],
+                  [22.999091832228032, 72.47511401574809],
+                  [22.96805317130962, 72.46425027093332],
+                  [22.93252240206772, 72.53542653006753],
+                  [22.92872730260939, 72.5777576736593],
+                  [22.947701736257514, 72.65155621602514],
+                  [23.04908355201833, 72.68227439101997],
+                  [23.103880731734804, 72.68489667425163],
+                  [23.11662907276437, 72.63020333828516],
+                ],
+              ],
+              type: "Polygon",
+            },
+          },
+        ],
+      };
+
+      fetch("http://192.168.1.9:8000/encode_image") // Request the encoded image from the Flask server
+        .then((response) => response.json())
+        .then((data) => {
+          const imageUrl = "data:image/jpeg;base64," + data.encoded_image;
+          console.log("Image downloaded");
+
+          // Initialize the map
+          const map = L.map("map")
+            .setView([23.034949842194493, 72.5777576736593], 13)
+            .fitBounds(imagejsonFeature.features[0].geometry.coordinates);
+
+          L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution:
+              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          }).addTo(map);
+
+          // Add the GeoJSON layer to the map (replace with your actual GeoJSON data)
+          L.geoJSON(geojsonFeature).addTo(map);
+
+          // Add the image overlay to the map
+          const imageBounds = imagejsonFeature.features[0].geometry.coordinates;
+          //const debugOverlay = L.polygon(imageBounds, { color: 'red', fillOpacity: 0.3 }).addTo(map);
+          const imageOverlay = L.imageOverlay(imageUrl, imageBounds, {
+            opacity: 0.5,
+          }).addTo(map);
+
+          console.log("imageUrl:", imageUrl);
+          console.log("geojsonFeature:", geojsonFeature);
+        })
+        .catch((error) => console.error("Error:", error));
+    </script>
+  </body>
+</html>
